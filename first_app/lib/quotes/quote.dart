@@ -4,6 +4,7 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:first_app/quotes/category_button.dart';
 import 'package:first_app/quotes/quote_container.dart';
 
+/// A StatefulWidget that displays a screen for viewing quotes in different categories.
 class MyQuoteScreen extends StatefulWidget {
   const MyQuoteScreen({super.key});
 
@@ -12,6 +13,7 @@ class MyQuoteScreen extends StatefulWidget {
 }
 
 class _MyQuoteScreenState extends State<MyQuoteScreen> {
+  // List of available categories for quotes
   final List<String> categories = [
     'Inspiration',
     'Relationship',
@@ -22,8 +24,13 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
     'Islamic',
   ];
 
+  // List of future quotes to be fetched
   late List<Future<Map<String, String>>> quoteFutures;
-  String selectedCategory = 'All'; // Default category
+
+  // Currently selected category, initialized to 'All'
+  String selectedCategory = 'All';
+
+  // List of booleans to manage 'like' status for each quote
   final List<bool> isRedList = [false, false, false, false];
 
   @override
@@ -32,9 +39,10 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
     fetchQuote(selectedCategory); // Fetch quotes for the default category
   }
 
+  /// Toggles the 'like' status for a given quote at the specified index
   void toggleFavorite(int index) {
     setState(() {
-      isRedList[index] = !isRedList[index];
+      isRedList[index] = !isRedList[index]; // Toggle like status
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -50,14 +58,15 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 55, 114, 141),
       appBar: AppBar(
-        title: const Text('Quotes'),
+        title: const Text('Quotes'), // App bar title
       ),
       body: SingleChildScrollView(
-        // Wrap the main content in a SingleChildScrollView
+        // Wraps the main content in a SingleChildScrollView for scrolling
         child: Center(
           child: Column(
             children: [
               const SizedBox(height: 20),
+              // Title for the Quotes section
               Text(
                 'QUOTES OF THE DAY!',
                 textAlign: TextAlign.center,
@@ -76,6 +85,7 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Subtitle with a greeting quote
               Text(
                 '"Hello! Here’s a sprinkle of wisdom and positivity to start your day right. 🌞"',
                 textAlign: TextAlign.center,
@@ -86,13 +96,15 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
                   letterSpacing: 2,
                   shadows: [
                     Shadow(
-                        color: Colors.black,
-                        offset: Offset(1, 1),
-                        blurRadius: 3)
+                      color: Colors.black,
+                      offset: Offset(1, 1),
+                      blurRadius: 3,
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
+              // Category buttons to select the type of quotes
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -100,20 +112,20 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
                     return CategoryButton(
                       categoryName: category,
                       onTap: () {
-                        fetchQuote(category);
+                        fetchQuote(category); // Fetch quotes based on category
                         setState(() {
                           selectedCategory = category;
                         });
                       },
                     );
-                  }).toList(),
+}).toList(),
                 ),
               ),
               const SizedBox(height: 10),
+              // Displays the currently selected category
               Padding(
                 padding: const EdgeInsets.only(left: 5, top: 10, bottom: 0),
                 child: Container(
-                  margin: const EdgeInsets.all(0),
                   padding: const EdgeInsets.all(10),
                   child: Text(
                     selectedCategory,
@@ -127,19 +139,18 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
                   ),
                 ),
               ),
-              // Remove the Expanded widget for ListView and replace it with a regular Column
+              // ListView for displaying quotes in the selected category
               ListView.builder(
                 padding: const EdgeInsets.all(8.0),
-                shrinkWrap:
-                    true, // Allows ListView to take only the necessary space
-                physics:
-                    const NeverScrollableScrollPhysics(), // Disable ListView scrolling
+                shrinkWrap: true, // Allows ListView to take only necessary space
+                physics: const NeverScrollableScrollPhysics(), // Disable ListView scrolling
                 itemCount: quoteFutures.length,
                 itemBuilder: (context, index) {
                   return FutureBuilder<Map<String, String>>(
                     future: quoteFutures[index],
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
+                        // Show a loading indicator while fetching quotes
                         return const Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
@@ -163,6 +174,7 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
     );
   }
 
+  /// Generates a random quote based on the specified category
   Future<Map<String, String>> generateRandomQuote([String? category]) async {
     final model = GenerativeModel(
       model: 'gemini-1.5-pro',
@@ -170,8 +182,9 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
           'AIzaSyB1RcRjogMb0hkl6THWw203l1fN3t4ngWo', // Replace with your actual API key
     );
 
-    String mainCategory = category?.split(' -')[0] ?? '';
+    String mainCategory = category?.split(' -')[0] ?? ''; // Extracts the main category
 
+// Define the prompt based on the selected category
     String prompt;
     switch (mainCategory) {
       case 'Inspiration':
@@ -208,6 +221,7 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
         break;
     }
 
+    // Generate the quote based on the prompt
     final response = await model.generateContent([
       Content.multi([TextPart(prompt)])
     ]);
@@ -222,6 +236,7 @@ class _MyQuoteScreenState extends State<MyQuoteScreen> {
     };
   }
 
+  /// Fetches multiple quotes for the selected category and updates the quoteFutures list
   void fetchQuote(String category) {
     setState(() {
       quoteFutures = [
