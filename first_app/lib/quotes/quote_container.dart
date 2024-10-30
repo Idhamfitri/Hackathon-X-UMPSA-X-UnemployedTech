@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// QuoteContainer widget displays a quote along with favorite and copy functionality.
 class QuoteContainer extends StatelessWidget {
-  final Future<Map<String, String>> quoteFuture;
-  final bool isRed;
-  final VoidCallback onFavoriteToggle;
+  final Future<Map<String, String>> quoteFuture; // Future holding the quote and author
+  final bool isRed; // Indicates if the quote is marked as favorite
+  final VoidCallback onFavoriteToggle; // Callback for toggling favorite status
 
   const QuoteContainer({
     Key? key,
@@ -15,18 +16,18 @@ class QuoteContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? quote;
-    String? author;
+    String? quote;  // Holds the quote text
+    String? author; // Holds the author name
 
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.all(10),
-      width: double.infinity, // Ensures it fills the available width
+      width: double.infinity, // Fills the available width
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 71, 143, 165),
-        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+        color: const Color.fromARGB(255, 71, 143, 165), // Background color
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)), // Rounded corners
         border: Border.all(
-          color: Colors.black,
+          color: Colors.black, // Border color
           width: 1.0,
         ),
         boxShadow: const [
@@ -39,17 +40,19 @@ class QuoteContainer extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Important to avoid unbounded height
+        mainAxisSize: MainAxisSize.min, // Adjusts to content's height
         children: [
-          // Static buttons at the top of the container
+          // Row for static buttons at the top (Copy and Favorite)
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               GestureDetector(
                 onTap: () {
                   if (quote != null && author != null) {
+                    // Copies the quote and author to clipboard
                     Clipboard.setData(
                         ClipboardData(text: '"$quote" - $author'));
+                    // Shows feedback message
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Quote copied to clipboard!')),
@@ -63,6 +66,7 @@ class QuoteContainer extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 15),
+              // Favorite button with toggle functionality
               IconButton(
                 icon: Icon(isRed ? Icons.favorite : Icons.favorite_outline),
                 iconSize: 30,
@@ -76,24 +80,28 @@ class QuoteContainer extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // FutureBuilder for quote and author text
+          // FutureBuilder widget to display quote and author from future data
           FutureBuilder<Map<String, String>>(
             future: quoteFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
+                // Shows loading indicator while waiting for data
                 return const CircularProgressIndicator();
               } else if (snapshot.hasError) {
+                // Shows error message if data loading fails
                 return Text(
                   'Failed to load quote: ${snapshot.error}',
                   style: const TextStyle(color: Colors.red),
                 );
               } else {
+                // Retrieves quote and author from snapshot data
                 quote = snapshot.data?['quote'];
                 author = snapshot.data?['author'] ?? 'Unknown';
 
-                return Column(
-                  mainAxisSize: MainAxisSize.min, // Avoids unbounded height
+return Column(
+                  mainAxisSize: MainAxisSize.min, // Adjusts to content's height
                   children: [
+                    // Displays the quote text
                     Text(
                       '"${quote ?? "Loading..."}"',
                       textAlign: TextAlign.start,
@@ -114,6 +122,7 @@ class QuoteContainer extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 35),
+                    // Displays the author name, aligned to the right
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
