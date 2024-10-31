@@ -1,4 +1,4 @@
-// all these files was totally made by human :)
+
 
 // all import files include here :
 import 'package:first_app/main.dart';
